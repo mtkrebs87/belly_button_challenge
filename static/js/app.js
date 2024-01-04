@@ -38,7 +38,7 @@ function init() {
         console.log(first_sample);
 
         //Build plots
-        demodata(first_sample);
+        demoData(first_sample);
         barchart(first_sample);
         bubblechart(first_sample);
     });
@@ -133,7 +133,7 @@ function barchart(sample) {
 
 
 //Function to populate the demographic data
-function demodata(sample) {
+function demoData(sample) {
 
     //use d3 to retrieve the data
     d3.json(url).then(function(data)  {
@@ -148,13 +148,13 @@ function demodata(sample) {
         console.log(value)
 
         //get index from array
-        let valueData = [0];
+        let subjectData = value[0];
 
         //clear metadata
         d3.select("#sample-metadata").html(" ");
 
         //use object.entries to add each key:value pair
-        Object.entries(valueData).forEach(function([key,value]) {
+        Object.entries(subjectData).forEach(function([key,value]) {
 
             //log key:value pairs
             console.log(key,value);
@@ -165,13 +165,13 @@ function demodata(sample) {
 };
 
 //Function to update dashboard when selection is changed
-function dashboardChange(first_sample) {
+function optionChanged(first_sample) {
 
     //Log new value
     console.log(first_sample);
 
     //Call all functions
-    demodata(first_sample);
+    demoData(first_sample);
     barchart(first_sample);
     bubblechart(first_sample);
 };
