@@ -41,21 +41,20 @@ function init() {
         demodata(first_sample);
         barchart(first_sample);
         bubblechart(first_sample);
-        gaugechart(first_sample);
     });
 };
 
 //Function to build the bubblechart
-function bubblechart(samples) {
+function bubblechart(sample) {
 
     //use d3 to retrieve the data
-    d3.json(url).then(function(data) {
+    d3.json(url).then(function(data)  {
 
         //retrieve data from samples
         let sampleData2 = data.samples;
 
         //filter based on value of sample
-        let value = sampleData2.filter(result => result.id == samples);
+        let value = sampleData2.filter(result => result.id == sample);
 
         //get first index from array
         let valueData = value[0];
@@ -69,7 +68,7 @@ function bubblechart(samples) {
             marker: {
                 size: valueData.sample_values,
                 color: valueData.otu_ids,
-                colorscale: "Greens"
+                colorscale: "Portland"
             }
         };
 
@@ -86,7 +85,7 @@ function bubblechart(samples) {
 };
 
 //Function to build the bar chart
-function barchart(samples) {
+function barchart(sample) {
 
     //use d3 to retrieve the data
     d3.json(url).then(function(data) {
@@ -95,7 +94,7 @@ function barchart(samples) {
         let sampleData = data.samples;
 
         //filter based on value of sample
-        let value = sampleData.filter(result => result.id == samples);
+        let value = sampleData.filter(result => result.id == sample);
 
         //Get first index from array
         let valueData = value[0];
@@ -110,7 +109,7 @@ function barchart(samples) {
 
         //display the top 10 otus
         let xvalues = sample_values.slice(0,10).reverse();
-        let yvalues = otu_ids.slice(0,10).reverse();
+        let yvalues = otu_ids.slice(0,10).map(id => `OTU ${id}`).reverse();
         let labels = otu_labels.slice(0,10).reverse();
 
         //create trace for bar chart
@@ -134,16 +133,16 @@ function barchart(samples) {
 
 
 //Function to populate the demographic data
-function demodata(samples) {
+function demodata(sample) {
 
     //use d3 to retrieve the data
-    d3.json(url).then(function(data) {
+    d3.json(url).then(function(data)  {
 
         //retrieve all metagata for demographics table
         let metadata = data.metadata;
 
         //filter based on value of sample
-        let value = metadata.filter(result => result.id == samples);
+        let value = metadata.filter(result => result.id == sample);
 
         //Log the array of the metadata objects after filtering
         console.log(value)
@@ -152,10 +151,10 @@ function demodata(samples) {
         let valueData = [0];
 
         //clear metadata
-        d3.select("#sample-metadata").html("");
+        d3.select("#sample-metadata").html(" ");
 
         //use object.entries to add each key:value pair
-        Object.entries(valueData).forEach(([key,value]) => {
+        Object.entries(valueData).forEach(function([key,value]) {
 
             //log key:value pairs
             console.log(key,value);
@@ -163,6 +162,18 @@ function demodata(samples) {
             d3.select("#sample-metadata").append("h5").text(`${key}: ${value}`);
         });
     });
+};
+
+//Function to update dashboard when selection is changed
+function dashboardChange(first_sample) {
+
+    //Log new value
+    console.log(first_sample);
+
+    //Call all functions
+    demodata(first_sample);
+    barchart(first_sample);
+    bubblechart(first_sample);
 };
 
 
