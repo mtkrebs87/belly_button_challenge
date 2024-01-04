@@ -3,7 +3,6 @@ const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/
 
 //Promise Pending
 const dataPromise = d3.json(url);
-
 console.log("Data Promise: ", dataPromise);
 
 //Fetch JSON data and log it
@@ -11,51 +10,162 @@ d3.json(url).then(function(data) {
     console.log(data);
 });
 
-//Initialize the dashboard with default plot
+//Initialize dashboard on startup
 function init() {
 
-    //Select dropdown menu with D3
+    //Use d3 to select the dropdown menu
     let dropdownMenu = d3.select("#selDataset");
 
-    //Assign values from the dataset
-    let dataset = dropdownMenu.names;
+    //Use d3 to get sample names and populate the dropdown menu
+    d3.json(url).then(function(data) {
 
-    //
-}
+        //Sets variable for sample names
+        let names = data.names;
 
-// //Create horizontal bar chart with dropdown menu - displays top 10 otus
-// //sort search data results
-// let sorteddata = dataPromise.sort((a, b) => b.sample_values - a.sample_values);
+        //Add samples to dropdown menu
+        names.forEach(function(id) {
 
-// //slice objects for plotting
-// let slicedData = sorteddata.slice(0, 10);
+            //Log the value of the id for each iteration of the loop
+            console.log(id);
 
-// //reverse array to accomodate Plotly's defaults
-// slicedData.reverse();
+            dropdownMenu.append("option").text(id).property("value",id);
+        });
 
-// //Trace1 = top 10 OTU data
-// let trace1 = {
-//     x: slicedData.map(object => object.sample_values),
-//     y: slicedData.map(object => object.otu_ids),
-//     text: slicedData.map(object => object.otu_ids),
-//     name: "IDs",
-//     type: "bar",
-//     orientation: "h"
-// };
+        //Set the first sample from the list
+        let first_sample = names[0];
 
-// //Data Array
-// let data = [trace1];
+        //Log value of first_sample
+        console.log(first_sample);
 
-// //Apply title to layout
-// let layout = {
-//     title: "Top 10 OTU's Per Individual",
-//     margin: {
-//         l: 100,
-//         r: 100,
-//         t: 100,
-//         b: 100
-//     }
-// };
+        //Build plots
+        demodata(first_sample);
+        barchart(first_sample);
+        bubblechart(first_sample);
+        gaugechart(first_sample);
+    });
+};
 
-// //Render the plot to the div tab with id "plot"
-// Plotly.newPlot("plot", data, layout);
+//Function to build the bubblechart
+function bubblechart(samples) {
+
+    //use d3 to retrieve the data
+    d3.json(url).then(function(data) {
+
+        //retrieve data from samples
+        let sampleData2 = data.samples;
+
+        //filter based on value of sample
+        let value = sampleData2.filter(result => result.id == samples);
+
+        //get first index from array
+        let valueData = value[0];
+
+        //set up trace for bubble chart
+        let trace2 = {
+            x: valueData.otu_ids,
+            y: valueData.sample_values,
+            text: valueData.otu_labels,
+            mode: "markers",
+            marker: {
+                size: valueData.sample_values,
+                color: valueData.otu_ids,
+                colorscale: "Greens"
+            }
+        };
+
+        //setup layout
+        let layout = {
+            title: "Number of Bacteria Per Subject",
+            hovermode: "closest",
+            xaxis: {title: "OTU IDs"},
+        };
+
+        //use Plotly to setup bubble chart
+        Plotly.newPlot("bubble", [trace2], layout)
+    });
+};
+
+//Function to build the bar chart
+function barchart(samples) {
+
+    //use d3 to retrieve the data
+    d3.json(url).then(function(data) {
+
+        //retrieve data from samples
+        let sampleData = data.samples;
+
+        //filter based on value of sample
+        let value = sampleData.filter(result => result.id == samples);
+
+        //Get first index from array
+        let valueData = value[0];
+
+        //Get otu_ids, otu_labels, sample_values)
+        let otu_ids = valueData.otu_ids;
+        let otu_labels = valueData.otu_labels;
+        let sample_values = valueData.sample_values;
+
+        //log data to console
+        console.log(otu_ids, otu_labels, sample_values);
+
+        //display the top 10 otus
+        let xvalues = sample_values.slice(0,10).reverse();
+        let yvalues = otu_ids.slice(0,10).reverse();
+        let labels = otu_labels.slice(0,10).reverse();
+
+        //create trace for bar chart
+        let trace1 = {
+            x: xvalues,
+            y: yvalues,
+            text: labels,
+            type: "bar",
+            orientation: "h"
+        };
+
+        //setup layout
+        let layout = {
+            title: "Top 10 OTUs Per Subject"
+        };
+
+        //use plotly to set up bar chart
+        Plotly.newPlot("bar", [trace1], layout)
+    });
+};
+
+
+//Function to populate the demographic data
+function demodata(samples) {
+
+    //use d3 to retrieve the data
+    d3.json(url).then(function(data) {
+
+        //retrieve all metagata for demographics table
+        let metadata = data.metadata;
+
+        //filter based on value of sample
+        let value = metadata.filter(result => result.id == samples);
+
+        //Log the array of the metadata objects after filtering
+        console.log(value)
+
+        //get index from array
+        let valueData = [0];
+
+        //clear metadata
+        d3.select("#sample-metadata").html("");
+
+        //use object.entries to add each key:value pair
+        Object.entries(valueData).forEach(([key,value]) => {
+
+            //log key:value pairs
+            console.log(key,value);
+
+            d3.select("#sample-metadata").append("h5").text(`${key}: ${value}`);
+        });
+    });
+};
+
+
+
+//Call Initialize function
+init();
